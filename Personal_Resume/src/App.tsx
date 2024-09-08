@@ -271,7 +271,7 @@ export default function AdvancedResume(): JSX.Element {
             </div>
           </div>
           <ul
-            className={`md:flex space-x-4 justify-center mt-4 md:mt-0 ${
+            className={`md:flex space-x-4 justify-center mt-4 md:mt-0 md:p-6 ${
               isMenuOpen ? "block" : "hidden"
             } md:block`}
           >
@@ -639,7 +639,7 @@ export default function AdvancedResume(): JSX.Element {
       <div>
         {/* //contact--section */}
         <CSSTransition key="contact" timeout={500} classNames="fade mt-10">
-          <Card>
+          <Card ref={sectionRefs.contact}>
             <CardHeader>
               <CardTitle>Contact Me</CardTitle>
             </CardHeader>
