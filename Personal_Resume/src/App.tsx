@@ -263,7 +263,7 @@ export default function AdvancedResume(): JSX.Element {
     <div className="container mx-auto p-4 space-y-6">
       <div ref={componentRef}>
         <nav className="sticky top-0 bg-white z-10 p-4 shadow-md">
-          <div className="flex justify-between items-center">
+          <div className="flex  justify-between items-center">
             <div className="md:hidden">
               <button onClick={toggleMenu} aria-label="Toggle Menu">
                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -271,13 +271,17 @@ export default function AdvancedResume(): JSX.Element {
             </div>
           </div>
           <ul
-            className={`md:flex space-x-4 justify-center mt-4 md:mt-0 md:p-6 ${
+            className={`md:flex space-x-4 justify-center mt-4 md:mt-0 ${
               isMenuOpen ? "block" : "hidden"
             } md:block`}
           >
             {Object.keys(sectionRefs).map((section) => (
-              <li key={section}>
+              <li
+               
+                key={section}
+              >
                 <Button
+                className="px-3"
                   variant="ghost"
                   onClick={() => scrollToSection(section as keyof SectionRefs)}
                 >
