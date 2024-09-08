@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Download, ChevronDown, ChevronUp, Send, X } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Send, X, Menu} from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,14 +15,17 @@ import hero from "./assets/hero1.png";
 import img3 from "./assets/img-3.png";
 import img4 from "./assets/img-4.png";
 import html2pdf from "html2pdf.js";
+import emailjs from "emailjs-com";
+
+
 const mapContainerStyle = {
   width: "100%",
   height: "400px",
 };
 
 const center = {
-  lat: 40.7128,
-  lng: -74.006,
+  lat: 18.6011, // Latitude for Wakad, Pune
+  lng: 73.7641, // Longitude for Wakad, Pune
 };
 
 interface SectionRefs {
@@ -58,6 +61,8 @@ interface Project {
   imageUrl: string;
 }
 
+
+
 const projects: Project[] = [
   {
     id: 1,
@@ -87,6 +92,7 @@ const projects: Project[] = [
     imageUrl: img3,
   },
 ];
+
 export default function AdvancedResume(): JSX.Element {
   const sectionRefs: SectionRefs = {
     profile: useRef<HTMLDivElement>(null),
@@ -98,6 +104,7 @@ export default function AdvancedResume(): JSX.Element {
     contact: useRef<HTMLDivElement>(null),
     references: useRef<HTMLDivElement>(null),
   };
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
   const [visibleSections, setVisibleSections] = useState<VisibleSections>({
     hobbies: true,
@@ -125,36 +132,66 @@ export default function AdvancedResume(): JSX.Element {
     email: "",
     message: "",
   });
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
-  const scrollToSection = (section: string): void => {
-    sectionRefs[section].current?.scrollIntoView({ behavior: "smooth" });
-  };
+   const toggleMenu = () => {
+     setIsMenuOpen(!isMenuOpen);
+   };
+
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  
+   const scrollToSection = (section: keyof SectionRefs) => {
+     sectionRefs[section]?.current?.scrollIntoView({ behavior: "smooth" });
+     setIsMenuOpen(false); 
+   };
 
   const toggleSection = (section: string): void => {
     setVisibleSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    if (validateForm()) {
-      toast({
-        title: "Message Sent",
-        description: "Your message has been sent successfully.",
-      });
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const errors: FormErrors = {};
-    if (!formData.name.trim()) errors.name = "Name is required";
-    if (!formData.email.trim()) errors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
-      errors.email = "Email is invalid";
-    if (!formData.message.trim()) errors.message = "Message is required";
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+ const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+   e.preventDefault();
+   if (validateForm()) {
+     // Send email using EmailJS
+      const templateParams: Record<string, unknown> = {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+      };
+     emailjs
+       .send(
+         "service_ivzpi7u", 
+         "template_81iotbj", 
+         templateParams,
+         "VqUTXQTV0xMBqe2bo" 
+       )
+       .then(
+         () => {
+           toast({
+             title: "Message Sent",
+             description: "Your message has been sent successfully.",
+           });
+           setFormData({ name: "", email: "", message: "" }); 
+         },
+         (error) => {
+           toast({
+             title: "Message Failed",
+             description: "There was an issue sending your message.",
+           });
+           console.error("EmailJS error:", error);
+         }
+       );
+   }
+ };
+   const validateForm = (): boolean => {
+     const errors: FormErrors = {};
+     if (!formData.name.trim()) errors.name = "Name is required";
+     if (!formData.email.trim()) errors.email = "Email is required";
+     else if (!/\S+@\S+\.\S+/.test(formData.email))
+       errors.email = "Email is invalid";
+     if (!formData.message.trim()) errors.message = "Message is required";
+     setFormErrors(errors);
+     return Object.keys(errors).length === 0;
+   };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -186,7 +223,7 @@ export default function AdvancedResume(): JSX.Element {
         html2canvas: { scale: 2 },
         jsPDF: {
           unit: "in",
-          format: [8.5, 11],
+          format: [10, 11],
           orientation: "portrait",
         },
       })
@@ -226,12 +263,23 @@ export default function AdvancedResume(): JSX.Element {
     <div className="container mx-auto p-4 space-y-6">
       <div ref={componentRef}>
         <nav className="sticky top-0 bg-white z-10 p-4 shadow-md">
-          <ul className="flex space-x-4 justify-center">
+          <div className="flex justify-between items-center">
+            <div className="md:hidden">
+              <button onClick={toggleMenu} aria-label="Toggle Menu">
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          </div>
+          <ul
+            className={`md:flex space-x-4 justify-center mt-4 md:mt-0 ${
+              isMenuOpen ? "block" : "hidden"
+            } md:block`}
+          >
             {Object.keys(sectionRefs).map((section) => (
               <li key={section}>
                 <Button
                   variant="ghost"
-                  onClick={() => scrollToSection(section)}
+                  onClick={() => scrollToSection(section as keyof SectionRefs)}
                 >
                   {section.charAt(0).toUpperCase() + section.slice(1)}
                 </Button>
@@ -247,6 +295,7 @@ export default function AdvancedResume(): JSX.Element {
           <Download className="mr-2 h-4 w-4" /> Download PDF
         </Button>
 
+        {/* //Profile--section */}
         <TransitionGroup>
           <CSSTransition
             key="profile"
@@ -268,7 +317,7 @@ export default function AdvancedResume(): JSX.Element {
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="text-xl font-semibold">Profile</h2>
+                  <h2 className="text-xl font-semibold ">Profile</h2>
                   <p>
                     Motivated and innovative frontend developer proficient in
                     JavaScript and experienced with the MERN stack. Skilled in
@@ -282,6 +331,7 @@ export default function AdvancedResume(): JSX.Element {
             </Card>
           </CSSTransition>
 
+          {/* //Experience-section */}
           <CSSTransition
             key="experience"
             timeout={500}
@@ -383,6 +433,7 @@ export default function AdvancedResume(): JSX.Element {
             </Card>
           </CSSTransition>
 
+          {/* //Education-section */}
           <CSSTransition
             style={{ pageBreakBefore: "always", marginTop: "25px" }}
             key="education"
@@ -403,6 +454,7 @@ export default function AdvancedResume(): JSX.Element {
             </Card>
           </CSSTransition>
 
+          {/* //Skill-section */}
           <CSSTransition
             key="skills"
             timeout={500}
@@ -437,6 +489,7 @@ export default function AdvancedResume(): JSX.Element {
             </Card>
           </CSSTransition>
 
+          {/* //Portfolio--section */}
           <CSSTransition
             style={{ pageBreakInside: "avoid", marginTop: "25px" }}
             key="portfolio"
@@ -457,7 +510,7 @@ export default function AdvancedResume(): JSX.Element {
                       <img
                         src={project.imageUrl}
                         alt={project.title}
-                        className="w-full h-80 object-cover"
+                        className="w-full h-70 object-fill"
                       />
                       <div className="p-4">
                         <h3 className="font-semibold">{project.title}</h3>
@@ -472,11 +525,12 @@ export default function AdvancedResume(): JSX.Element {
             </Card>
           </CSSTransition>
 
+          {/* //Hobbies-section */}
           <CSSTransition
             key="hobbies"
             timeout={500}
             classNames="fade"
-            style={{ marginTop: "25px" }}
+            style={{ marginTop: "25px", pageBreakInside: "avoid" }}
           >
             <Card ref={sectionRefs.hobbies}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -506,6 +560,7 @@ export default function AdvancedResume(): JSX.Element {
             </Card>
           </CSSTransition>
 
+          {/* //Reference--section */}
           <CSSTransition
             style={{ pageBreakInside: "avoid", marginTop: "25px" }}
             key="references"
@@ -582,8 +637,9 @@ export default function AdvancedResume(): JSX.Element {
       </div>
 
       <div>
+        {/* //contact--section */}
         <CSSTransition key="contact" timeout={500} classNames="fade mt-10">
-          <Card ref={sectionRefs.contact}>
+          <Card>
             <CardHeader>
               <CardTitle>Contact Me</CardTitle>
             </CardHeader>
@@ -658,12 +714,13 @@ export default function AdvancedResume(): JSX.Element {
           </Card>
         </CSSTransition>
 
-        <Card>
+        {/* //google-map */}
+        <Card className=" mt-8">
           <CardHeader>
             <CardTitle>Location</CardTitle>
           </CardHeader>
           <CardContent>
-            <LoadScript googleMapsApiKey="YOUR_API_KEY">
+            <LoadScript googleMapsApiKey="AIzaSyBCNfkjYCdAEZG88ynaeoAL_yEks9Ll3Go">
               <GoogleMap
                 mapContainerStyle={mapContainerStyle}
                 center={center}
