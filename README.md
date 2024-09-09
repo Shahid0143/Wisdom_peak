@@ -22,14 +22,12 @@ This project is an advanced, interactive resume built with React and Next.js. It
 ## Technologies Used
 
 - React
-- Next.js
 - TypeScript
 - Tailwind CSS
 - shadcn/ui components
 - react-google-maps/api
 - react-transition-group
-- jsPDF
-- html2canvas
+- html2pdf
 
 ## Getting Started
 
