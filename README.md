@@ -106,6 +106,6 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## Contact
 
-Your Name - ssrazza143@gmail.com
+Your Name - ssraza143@gmail.com
 
 Project Link: [https://github.com/Shahid0143/Wisdom_peak](https://wisdom-peak.vercel.app/)
